@@ -3,10 +3,13 @@
 .idea
 .cache
 
+
 # dependencies
 node_modules
 .pnp
 .pnp.js
+.yarn
+
 
 # testing
 /coverage
