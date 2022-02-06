@@ -5,7 +5,7 @@ const totalPosts = () => posts.length;
 const allPosts = () => posts;
 
 const newPost = (parent, args, context, info) => {
-  console.log(args);
+  // console.log(args);
 
   const { title, description } = args.input;
 
