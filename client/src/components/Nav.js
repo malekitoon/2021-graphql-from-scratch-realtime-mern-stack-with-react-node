@@ -1,8 +1,22 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useHistory } from 'react-router-dom';
+import { AuthContext } from '../context/authContext';
+import { auth } from '../firebase';
 
 const Nav = () => {
-  // console.log('nav');
+  const history = useHistory();
+  const { state, dispatch } = useContext(AuthContext);
+  const { user } = state;
+
+  const logout = (e) => {
+    e.preventDefault();
+    auth.signOut();
+    dispatch({
+      type: 'LOGGED_IN_USER',
+      payload: null,
+    });
+    history.push('/login');
+  };
 
   return (
     <nav className='navbar navbar-expand-lg navbar-light bg-light'>
@@ -22,12 +36,20 @@ const Nav = () => {
 
       <div className='collapse navbar-collapse' id='navbarTogglerDemo03'>
         <ul className='navbar-nav mr-auto'>
-          <li className='nav-item'>
-            <Link className='nav-link' to='/login'>Login</Link>
-          </li>
-          <li className='nav-item'>
-            <Link className='nav-link' to='/register'>Register</Link>
-          </li>
+          {!user && (
+            <>
+              <li className='nav-item'>
+                <Link className='nav-link' to='/login'>Login</Link>
+              </li>
+
+              <li className='nav-item'>
+                <Link className='nav-link' to='/register'>Register</Link>
+              </li>
+            </>)}
+
+          {user && (<li className='nav-item'>
+            <a href='/logout' className='nav-link' onClick={e => logout(e)}>Logout</a>
+          </li>)}
         </ul>
 
         <div className="ml-auto">

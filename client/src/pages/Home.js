@@ -27,7 +27,7 @@ const Home = () => {
   return (
     <div className='container'>
       <div className='row p-5'>
-        {data.allPosts.map(post => (
+        {data && data.allPosts.map(post => (
           <div key={post.id} className='col-md-4'>
             <div className='card'>
               <div className='card-body'>
@@ -44,16 +44,12 @@ const Home = () => {
 
       <div className='row p-5'>
         <button
-          className='btn btn-raised btn-primary'
+          className='btn btn-raised btn-primary mr-5'
           onClick={() => fetchPosts()}
         >
           Fetch posts
         </button>
-        <hr />
-        <div>{JSON.stringify(fetchPostsData)}</div>
-        <hr />
-        <p>{JSON.stringify(state.user)}</p>
-        <hr />
+
         <button
           className='btn btn-raised btn-primary'
           onClick={() => {
@@ -67,6 +63,11 @@ const Home = () => {
           Update username
         </button>
       </div>
+
+      <hr />
+      <p>{JSON.stringify(state.user)}</p>
+      <hr />
+      <div>{JSON.stringify(fetchPostsData)}</div>
     </div>
   );
 }
