@@ -23,7 +23,7 @@ const Login = () => {
   const { dispatch } = useContext(AuthContext);
 
   const [email, setEmail] = useState('malekitoon@gmail.com');
-  const [password, setPassword] = useState('qwerty123');
+  const [password, setPassword] = useState('qwerty12345');
   const [loading, setLoading] = useState(false);
 
   const [userCreate] = useMutation(USER_CREATE);
@@ -42,7 +42,7 @@ const Login = () => {
         // send user info to our server mongodb to either update/create
         userCreate();
 
-        history.push('/');
+        history.push('/profile');
       })
   };
 
@@ -64,7 +64,7 @@ const Login = () => {
       // send user info to our server mongodb to either update/create
       userCreate();
 
-      history.push('/');
+      history.push('/profile');
     } catch (e) {
       console.log('login error', e);
       toast.error(e.message);
@@ -95,6 +95,8 @@ const Login = () => {
         password={password}
         setPassword={setPassword}
       />
+
+      <Link className='text-danger float-right' to='/password/forgot'>Forgot password?</Link>
     </div>
   );
 };

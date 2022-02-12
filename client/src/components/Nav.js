@@ -47,9 +47,16 @@ const Nav = () => {
               </li>
             </>)}
 
-          {user && (<li className='nav-item'>
-            <a href='/logout' className='nav-link' onClick={e => logout(e)}>Logout</a>
-          </li>)}
+          {user && (
+            <>
+              <li className='nav-item'>
+                <Link className='nav-link' to='/profile'>{user && user.email.split('@')[0]}</Link>
+              </li>
+
+              <li className='nav-item'>
+                <a href='/logout' className='nav-link' onClick={e => logout(e)}>Logout</a>
+              </li>
+            </>)}
         </ul>
 
         <div className="ml-auto">
