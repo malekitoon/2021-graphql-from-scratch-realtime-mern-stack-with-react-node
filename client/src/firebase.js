@@ -27,5 +27,6 @@ export const googleAuthProvider = new GoogleAuthProvider();
 
 export default {
   auth,
+  analytics,
   googleAuthProvider,
 };

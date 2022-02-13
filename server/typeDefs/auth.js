@@ -43,6 +43,6 @@ module.exports = gql`
   
   type Mutation {
     userCreate: UserCreateResponse!
-    userUpdate(input: UserUpdateInput): User!
+    userUpdate(input: UserUpdateInput!): User!
   }
 `;
