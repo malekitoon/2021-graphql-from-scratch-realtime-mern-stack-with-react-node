@@ -5,7 +5,7 @@ import { auth } from '../../firebase';
 import AuthForm from '../../components/forms/AuthForm';
 
 const PasswordForgot = () => {
-  const [email, setEmail] = useState('malekitoon@gmail.com');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {

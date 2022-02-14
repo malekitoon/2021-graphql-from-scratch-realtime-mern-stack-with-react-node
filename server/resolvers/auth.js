@@ -4,10 +4,16 @@ const { DateTimeResolver } = require('graphql-scalars');
 const { authCheck } = require('../helpers/auth');
 const User = require('../models/user');
 
+const allUsers = async (parent, args, { req }) => await User.find({}).exec();
+
 const profile = async (parent, args, { req }) => {
   const currentUser = await authCheck(req);
 
   return await User.findOne({ email: currentUser.email }).exec();
+};
+
+const publicProfile = async (parent, args, { req }) => {
+  return await User.findOne({ username: args.username }).exec();
 };
 
 const userCreate = async (parent, args, { req }) => {
@@ -35,7 +41,9 @@ const userUpdate = async (parent, args, { req }) => {
 
 module.exports = {
   Query: {
+    allUsers,
     profile,
+    publicProfile,
   },
   Mutation: {
     userCreate,

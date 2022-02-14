@@ -22,8 +22,8 @@ const Login = () => {
   const history = useHistory();
   const { dispatch } = useContext(AuthContext);
 
-  const [email, setEmail] = useState('malekitoon@gmail.com');
-  const [password, setPassword] = useState('qwerty12345');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [userCreate] = useMutation(USER_CREATE);

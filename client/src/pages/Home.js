@@ -2,16 +2,7 @@ import React, { useContext } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useQuery, useLazyQuery, gql } from '@apollo/client';
 import { AuthContext } from '../context/authContext';
-
-const GET_ALL_POSTS = gql`
-  {
-    allPosts {
-      id
-      title
-      description
-    }
-  }
-`;
+import { GET_ALL_POSTS } from '../graphql/queries';
 
 const Home = () => {
   const { state, dispatch } = useContext(AuthContext);
