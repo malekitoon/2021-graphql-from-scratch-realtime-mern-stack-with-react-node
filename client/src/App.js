@@ -21,6 +21,7 @@ import SingleUser from './pages/SingleUser';
 const App = () => {
   const { state } = useContext(AuthContext);
   const { user } = state;
+  console.log('user=', user);
 
   const client = new ApolloClient({
     uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,

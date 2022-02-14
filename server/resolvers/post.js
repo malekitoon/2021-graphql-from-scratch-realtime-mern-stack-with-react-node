@@ -1,36 +1,48 @@
 const { gql } = require('apollo-server-express');
 const { DateTimeResolver } = require('graphql-scalars');
-const { posts } = require('../tmp');
 const { authCheck } = require('../helpers/auth');
+const User = require('../models/user');
+const Post = require('../models/post');
 
-const totalPosts = () => posts.length;
+const postCreate = async (parent, args, { req }) => {
+  const currentUser = await authCheck(req);
+
+  // input validation
+  if (args.input.content.trim() === '') throw new Error('Content is required');
+
+  const currentUserFromDb = await User.findOne({ email: currentUser.email });
+
+  const newPost = await new Post({
+    ...args.input,
+    postedBy: currentUserFromDb._id,
+  })
+    .save()
+    // .then((post) => post.populate([ { path: 'postedBy', select: '_id username' } ]));
+    .then((post) => post.populate([ 'postedBy' ]));
+  return newPost;
+};
 
 const allPosts = async (parent, args, { req }) => {
-  // await authCheck(req);
-  return posts;
-}
+  return await Post.find({})
+    .populate(['postedBy'])
+    .sort({ createdAt: -1 })
+    .exec();
+};
 
-const newPost = (parent, args, context, info) => {
-  // console.log(args);
-
-  const { title, description } = args.input;
-
-  const post = {
-    id: posts.length + 1,
-    title,
-    description,
-  };
-
-  posts.push(post);
-  return post;
+const postsByUser = async (parent, args, { req }) => {
+  const currentUser = await authCheck(req);
+  return await Post.find({ email: currentUser.email })
+    .populate(['postedBy'])
+    .sort({ createdAt: -1 })
+    .exec();
 };
 
 module.exports = {
   Query: {
-    totalPosts,
     allPosts,
+    postsByUser,
   },
   Mutation: {
-    newPost,
+    postCreate,
   }
 };

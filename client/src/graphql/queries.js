@@ -13,11 +13,18 @@ export const PROFILE = gql`
 export const GET_ALL_POSTS = gql`
   query {
     allPosts {
-      id
-      title
-      description
+      _id
+      content
+      image {
+        url,
+        public_id
+      }
+      postedBy {
+        ...userInfo
+      }
     }
   }
+  ${USER_INFO}
 `;
 
 export const ALL_USERS = gql`
