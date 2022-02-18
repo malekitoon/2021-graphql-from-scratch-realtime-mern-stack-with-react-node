@@ -5,8 +5,13 @@ const User = require('../models/user');
 const Post = require('../models/post');
 
 const allPosts = async (parent, args, { req }) => {
+  const currentPage = args.page || 1;
+  const perPage = 3;
+
   return await Post.find({})
+    .skip((currentPage - 1) * perPage)
     .populate(['postedBy'])
+    .limit(perPage)
     .sort({ createdAt: -1 })
     .exec();
 };

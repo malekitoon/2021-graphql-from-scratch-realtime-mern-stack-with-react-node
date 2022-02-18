@@ -1,0 +1,8 @@
+.pagination .activePagination {
+  background-color: #009688;
+  color: #fff!important;
+}
+
+.pagination .disabled {
+  color: #bbb!important;
+}

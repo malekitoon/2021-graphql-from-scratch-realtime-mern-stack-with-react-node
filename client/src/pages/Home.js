@@ -1,16 +1,21 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useQuery, useLazyQuery, gql } from '@apollo/client';
+import { useQuery, useLazyQuery } from '@apollo/client';
 import { AuthContext } from '../context/authContext';
-import { GET_ALL_POSTS } from '../graphql/queries';
+import { GET_ALL_POSTS, TOTAL_POSTS } from '../graphql/queries';
 import PostCard from '../components/PostCard';
+import PostPagination from '../components/PostPagination';
 
 const Home = () => {
+  const [page, setPage] = useState(1);
   const { state, dispatch } = useContext(AuthContext);
   const history = useHistory();
 
-  const { data, loading } = useQuery(GET_ALL_POSTS);
+  const { data, loading } = useQuery(GET_ALL_POSTS, {
+    variables: { page },
+  });
 
+  const { data: postCount } = useQuery(TOTAL_POSTS);
   const [fetchPosts, fetchPostsResult] = useLazyQuery(GET_ALL_POSTS);
   const { data: fetchPostsData /*, loading: fetchPostsLoading */ } = fetchPostsResult;
 
@@ -25,27 +30,11 @@ const Home = () => {
           </div>))}
       </div>
 
-      <div className='row p-5'>
-        <button
-          className='btn btn-raised btn-primary mr-5'
-          onClick={() => fetchPosts()}
-        >
-          Fetch posts
-        </button>
-
-        <button
-          className='btn btn-raised btn-primary'
-          onClick={() => {
-            dispatch({
-              type: 'LOGGED_IN_USER',
-              payload: 'Monika'
-            });
-            history.push('/login');
-          }}
-        >
-          Update username
-        </button>
-      </div>
+      <PostPagination
+        page={page}
+        setPage={setPage}
+        postCount={postCount}
+      />
 
       <hr />
       <p>{JSON.stringify(state.user)}</p>
