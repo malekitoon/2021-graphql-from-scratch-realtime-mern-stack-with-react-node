@@ -40,7 +40,7 @@ const Login = () => {
         });
 
         // send user info to our server mongodb to either update/create
-        userCreate();
+        await userCreate();
 
         history.push('/profile');
       })
@@ -62,7 +62,7 @@ const Login = () => {
       });
 
       // send user info to our server mongodb to either update/create
-      userCreate();
+      await userCreate();
 
       history.push('/profile');
     } catch (e) {

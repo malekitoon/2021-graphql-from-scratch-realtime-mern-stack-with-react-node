@@ -5,13 +5,13 @@ import { AuthContext } from '../context/authContext';
 import Image from '../components/Image';
 
 const FileUpload = ({
+  singleUpload = false,
   loading,
   setLoading,
   values,
   setValues,
 }) => {
   const { state } = useContext(AuthContext);
-  const { images } = values;
 
   const fileResizeAndUpload = async (event) => {
     setLoading(true);
@@ -36,7 +36,12 @@ const FileUpload = ({
               { headers: { authtoken: state.user.token }},
             )
               .then((response) => {
-                setValues({ ...values, images: [...images, response.data] });
+                if (singleUpload) {
+                  setValues({ ...values, image: response.data });
+                } else {
+                  const { images } = values;
+                  setValues({ ...values, images: [...images, response.data] });
+                }
               })
               .catch((error) => {
                 console.log('CLOUDINARY UPLOAD FAIL', error);
@@ -64,8 +69,13 @@ const FileUpload = ({
       { headers: { authtoken: state.user.token }},
     )
       .then((response) => {
-        let filteredImages = images.filter(item => item.public_id !== id);
-        setValues({ ...values, images: filteredImages });
+        if (singleUpload) {
+          setValues({ ...values, image: { url: '', public_id: '' } });
+        } else {
+          const { images } = values;
+          let filteredImages = images.filter(item => item.public_id !== id);
+          setValues({ ...values, images: filteredImages });
+        }
       })
       .catch(error => console.log(error))
       .finally(() => {
@@ -92,13 +102,21 @@ const FileUpload = ({
       </div>
 
       <div className='col-md-9'>
-        {images.map(image => (
+        {values.image && (
           <Image
-            key={image.public_id}
-            image={image}
-            handleImageRemove={handleImageRemove}
-          />
-        ))}
+              key={values.image.public_id}
+              image={values.image}
+              handleImageRemove={handleImageRemove}
+            />
+          )}
+
+        {values.images && values.images.map(image => (
+            <Image
+              key={image.public_id}
+              image={image}
+              handleImageRemove={handleImageRemove}
+            />
+          ))}
       </div>
     </div>
   );
