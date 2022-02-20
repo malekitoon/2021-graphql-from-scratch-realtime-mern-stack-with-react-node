@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { AuthContext } from '../context/authContext';
 import { auth } from '../firebase';
+import Search from './Search';
 
 const Nav = () => {
   const history = useHistory();
@@ -64,21 +65,7 @@ const Nav = () => {
         </ul>
 
         <div className="ml-auto">
-          <form className="form-inline my-2 my-lg-0" >
-            <input
-              type='search'
-              className='form-control'
-              placeholder='Type query'
-              aria-label='Search'
-            />
-            <button
-              className='btn btn-outline-primary'
-              type='button'
-              data-mdb-ripple-color='dark'
-            >
-              Search
-            </button>
-          </form>
+          <Search />
         </div>
       </div>
     </nav>
