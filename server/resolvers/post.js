@@ -4,6 +4,11 @@ const { authCheck } = require('../helpers/auth');
 const User = require('../models/user');
 const Post = require('../models/post');
 
+// subscriptions
+const POST_ADDED = 'POST_ADDED';
+const POST_UPDATED = 'POST_UPDATED';
+const POST_DELETED = 'POST_DELETED';
+
 const allPosts = async (parent, args, { req }) => {
   const currentPage = args.page || 1;
   const perPage = 3;
@@ -26,7 +31,7 @@ const postsByUser = async (parent, args, { req }) => {
     .exec();
 };
 
-const postCreate = async (parent, args, { req }) => {
+const postCreate = async (parent, args, { req, pubsub }) => {
   const currentUser = await authCheck(req);
 
   // input validation
@@ -41,10 +46,13 @@ const postCreate = async (parent, args, { req }) => {
     .save()
     // .then((post) => post.populate([ { path: 'postedBy', select: '_id username' } ]));
     .then((post) => post.populate([ 'postedBy' ]));
+
+  pubsub.publish(POST_ADDED, { postAdded: newPost });
+
   return newPost;
 };
 
-const postUpdate = async (parent, args, { req }) => {
+const postUpdate = async (parent, args, { req, pubsub }) => {
   const currentUser = await authCheck(req);
   // input validation
   if (args.input.content.trim() === '') throw new Error('Content is required');
@@ -57,16 +65,20 @@ const postUpdate = async (parent, args, { req }) => {
     throw new Error('Unauthorized action');
   }
 
-  return await Post.findByIdAndUpdate(
+  const updatedPost = await Post.findByIdAndUpdate(
     args.input._id,
     { ...args.input },
     { new: true },
   )
     .exec()
     .then(post => post.populate([ { path: 'postedBy', select: '_id username' } ]));
+
+  pubsub.publish(POST_UPDATED, { postUpdated: updatedPost });
+
+  return updatedPost;
 };
 
-const postDelete = async (parent, args, { req }) => {
+const postDelete = async (parent, args, { req, pubsub }) => {
   const currentUser = await authCheck(req);
   const currentUserFromDb = await User.findOne({ email: currentUser.email }).exec();
   const postToDelete = await Post.findById(args.postId).exec();
@@ -75,7 +87,13 @@ const postDelete = async (parent, args, { req }) => {
     throw new Error('Unauthorized action');
   }
 
-  return await Post.findByIdAndDelete(args.postId).exec();
+  const deletedPost =  await Post.findByIdAndDelete(args.postId)
+    .exec()
+    .then((post) => post.populate([ 'postedBy' ]));
+
+  pubsub.publish(POST_DELETED, { postDeleted: deletedPost });
+
+  return deletedPost;
 };
 
 const singlePost = async (parent, args) => {
@@ -104,5 +122,16 @@ module.exports = {
     postCreate,
     postUpdate,
     postDelete,
-  }
+  },
+  Subscription: {
+    postAdded: {
+      subscribe: (parent, args, { pubsub }) => pubsub.asyncIterator([POST_ADDED]),
+    },
+    postUpdated: {
+      subscribe: (parent, args, { pubsub }) => pubsub.asyncIterator([POST_UPDATED]),
+    },
+    postDeleted: {
+      subscribe: (parent, args, { pubsub }) => pubsub.asyncIterator([POST_DELETED]),
+    },
+  },
 };

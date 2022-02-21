@@ -1,6 +1,10 @@
 import React, { useContext } from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { split, HttpLink } from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { setContext } from '@apollo/client/link/context';
+import { getMainDefinition } from '@apollo/client/utilities';
 import { ToastContainer } from 'react-toastify';
 
 import PrivateRoute from './components/PrivateRoute';
@@ -26,13 +30,52 @@ const App = () => {
   const { user } = state;
   console.log('user=', user);
 
-  const client = new ApolloClient({
-    uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
-    cache: new InMemoryCache(),
-    headers: {
-      authtoken: user ? user.token : '',
-    },
+  // 1. create websocket link
+  const wsLink = new WebSocketLink({
+    uri: process.env.REACT_APP_GRAPHQL_WS_ENDPOINT,
+    options: {
+      reconnect: true,
+    }
   });
+
+  // 2. create http link
+  const httpLink = new HttpLink({
+    uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
+  });
+
+  // 3. setContext for authtoken
+  const authLink = setContext(() => {
+    return {
+      headers: {
+        authtoken: user ? user.token : '',
+      }
+    };
+  });
+
+  // 4. concat http and authtoken link
+  const httpAuthLink = authLink.concat(httpLink);
+
+  // 5. use split to split http link or websocket link
+  const link = split(({ query }) => {
+    // split link based on operation type
+    const definition = getMainDefinition(query);
+    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
+  }, wsLink, httpAuthLink);
+
+  // 6. create a new apollo client
+  const client = new ApolloClient({
+    cache: new InMemoryCache(),
+    link,
+  });
+
+  // old client without websockets
+  // const client = new ApolloClient({
+  //   uri: process.env.REACT_APP_GRAPHQL_ENDPOINT,
+  //   cache: new InMemoryCache(),
+  //   headers: {
+  //     authtoken: user ? user.token : '',
+  //   },
+  // });
 
   return (
     <ApolloProvider client={client}>

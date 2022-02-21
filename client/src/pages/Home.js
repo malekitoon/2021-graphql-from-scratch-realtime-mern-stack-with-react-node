@@ -1,10 +1,12 @@
 import React, { useContext, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useQuery, useLazyQuery } from '@apollo/client';
+import { gql, useQuery, useLazyQuery, useSubscription } from '@apollo/client';
 import { AuthContext } from '../context/authContext';
 import { GET_ALL_POSTS, TOTAL_POSTS } from '../graphql/queries';
+import { POST_ADDED, POST_UPDATED, POST_DELETED } from '../graphql/subscriptions';
 import PostCard from '../components/PostCard';
 import PostPagination from '../components/PostPagination';
+import { toast } from 'react-toastify';
 
 const Home = () => {
   const [page, setPage] = useState(1);
@@ -16,6 +18,76 @@ const Home = () => {
   });
 
   const { data: postCount } = useQuery(TOTAL_POSTS);
+
+  // subscription > post added
+  const { data: newPost } = useSubscription(POST_ADDED, {
+    onSubscriptionData: async ({ client: { cache }, subscriptionData: { data } }) => {
+      // read query from cache
+      const { allPosts } = cache.readQuery({
+        query: GET_ALL_POSTS,
+        variables: { page },
+      });
+
+      // write back to cache
+      cache.writeQuery({
+        query: GET_ALL_POSTS,
+        variables: { page },
+        data: {
+          allPosts: [data.postAdded, ...allPosts],
+        }
+      });
+
+      // refetch all posts to update ui
+      fetchPosts({
+        variables: { page },
+        refetchQueries: [
+          { query: GET_ALL_POSTS, variables: { page }},
+        ],
+      });
+
+      // show toast notification
+      toast.success('Post added!');
+    },
+  });
+  // subscription > post updated
+  const { data: updatedPost } = useSubscription(POST_UPDATED, {
+    onSubscriptionData: () => {
+      toast.success('Post updated!');
+    },
+  });
+  // subscription > post deleted
+  const { data: deletedPost } = useSubscription(POST_DELETED, {
+    onSubscriptionData: async ({ client: { cache }, subscriptionData: { data } }) => {
+      // read query from cache
+      const { allPosts } = cache.readQuery({
+        query: GET_ALL_POSTS,
+        variables: { page },
+      });
+
+      const filteredPosts = allPosts.filter(post => post._id !== data.postDeleted._id);
+
+      // write back to cache
+      cache.writeQuery({
+        query: GET_ALL_POSTS,
+        variables: { page },
+        data: {
+          allPosts: filteredPosts,
+        }
+      });
+
+      // refetch all posts to update ui
+      fetchPosts({
+        variables: { page },
+        refetchQueries: [
+          { query: GET_ALL_POSTS, variables: { page }},
+        ],
+      });
+
+      // show toast notification
+      toast.error('Post deleted!');
+    },
+  });
+
   const [fetchPosts, fetchPostsResult] = useLazyQuery(GET_ALL_POSTS);
   const { data: fetchPostsData /*, loading: fetchPostsLoading */ } = fetchPostsResult;
 
@@ -36,6 +108,8 @@ const Home = () => {
         postCount={postCount}
       />
 
+      <hr />
+      <p>{JSON.stringify(newPost)}</p>
       <hr />
       <p>{JSON.stringify(state.user)}</p>
       <hr />
