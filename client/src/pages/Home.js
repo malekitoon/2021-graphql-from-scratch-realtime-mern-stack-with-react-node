@@ -107,13 +107,6 @@ const Home = () => {
         setPage={setPage}
         postCount={postCount}
       />
-
-      <hr />
-      <p>{JSON.stringify(newPost)}</p>
-      <hr />
-      <p>{JSON.stringify(state.user)}</p>
-      <hr />
-      <div>{JSON.stringify(fetchPostsData)}</div>
     </div>
   );
 }

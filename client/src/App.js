@@ -28,7 +28,6 @@ import SearchResult from './components/SearchResult';
 const App = () => {
   const { state } = useContext(AuthContext);
   const { user } = state;
-  console.log('user=', user);
 
   // 1. create websocket link
   const wsLink = new WebSocketLink({
